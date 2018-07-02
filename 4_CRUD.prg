@@ -29,8 +29,7 @@ define class Form1 as form
     Width   =100, ;
     Height  = 25, ;
     Tabindex=  1, ;
-	Format  = 'K',;
-	Alignment= 2, ;
+	Format  = '!K',;
 	Value   ='',;
     Name    = "txtBuscar"
   	
@@ -114,6 +113,29 @@ define class Form1 as form
     Name    = "cmdDelete"
 	
 	
+ procedure txtBuscar.Interactivechange 
+   local I, J, M.cCad, M.cC, M.cNew, TT(1)
+   M.cNew = ''
+   M.cCad = upper(alltrim(This.Value))
+   for I=1 to len(M.cCad)
+      M.cC = substr(M.cCad,I,1)
+      for J=1 to ThisForm.lstData.ListCount
+		 if M.cC $ upper(ThisForm.lstData.List(J))
+            M.cNew = M.cNew +ThisForm.lstData.List(J)+ chr(13)		    
+		 endif
+      next
+   next
+   if !empty(M.cNew)
+      ThisForm.lstData.Clear
+      for J=1 to alines(TT,M.cNew)
+		 if !empty( TT(J) )
+  	        ThisForm.lstData.AddItem ( TT(J) )
+		 endif
+      next
+  	  ThisForm.lstData.Refresh
+   endif
+ endproc
+ 
  procedure txtName.Interactivechange 
    ThisForm.cmdCreate.Enabled = ( !empty(ThisForm.txtName.Value) and !empty(ThisForm.txtSurname.Value) )
  endproc
@@ -162,12 +184,17 @@ define class clsListBox as ListBox  && Create ListBox control
    
  procedure Click
    local nCnt 
+   ThisForm.cmdUpdate.Enabled = .f.
+   ThisForm.cmdDelete.Enabled = .f.
    for nCnt = 1 to This.ListCount
       if This.Selected(nCnt)  && Is item selected?
          *!* ? space(5) + This.List(nCnt) && Show item
 		 
 		 ThisForm.txtName.Value    = alltrim(left  (This.List(nCnt),at(',',This.List(nCnt))-1))
          ThisForm.txtSurname.Value = alltrim(substr(This.List(nCnt),at(',',This.List(nCnt))+1))
+		 
+         ThisForm.cmdUpdate.Enabled = .t.
+         ThisForm.cmdDelete.Enabled = .t.
 		 
       endif
    endfor
